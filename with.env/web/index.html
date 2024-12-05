@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #shopping-list {
+            margin-top: 20px;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 5px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shopping List</h1>
+
+    <h2>Add an item to your shopping list</h2>
+    <input type="text" id="item-name" placeholder="Item name" />
+    <input type="number" id="item-quantity" placeholder="Quantity" />
+    <button onclick="addItem()">Add Item</button>
+
+    <h2>Your Shopping List</h2>
+    <div id="shopping-list"></div>
+
+    <script>
+        // Fetch and display shopping list
+        function loadShoppingList() {
+            fetch('/api/shopping-list')
+                .then(response => response.json())
+                .then(data => {
+                    const listContainer = document.getElementById('shopping-list');
+                    listContainer.innerHTML = '';
+                    data.forEach(item => {
+                        const listItem = document.createElement('div');
+                        listItem.innerHTML = `${item.item_name} (Quantity: ${item.quantity})`;
+                        listContainer.appendChild(listItem);
+                    });
+                });
+        }
+
+        // Add a new item to the shopping list
+        function addItem() {
+            const itemName = document.getElementById('item-name').value;
+            const itemQuantity = document.getElementById('item-quantity').value;
+
+            if (!itemName || !itemQuantity) {
+                alert('Please fill in both item name and quantity.');
+                return;
+            }
+
+            const item = { item_name: itemName, quantity: parseInt(itemQuantity) };
+
+            fetch('/api/shopping-list', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(item)
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadShoppingList();
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-quantity').value = '';
+            })
+            .catch(error => console.error('Error adding item:', error));
+        }
+
+        // Load shopping list on page load
+        window.onload = loadShoppingList;
+    </script>
+</body>
+</html>
